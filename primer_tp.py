@@ -8,13 +8,10 @@ IDENITFICADOR_PROVINCIA_ARG = ('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
 PRECIOS = (1100, 1800, 2450, 8300, 10900, 14300, 17900)
 
 # Variables finales
-destino = ''
 inicial = 0
 final = 0
 
 # Variables temporales
-region_brasil = ''
-esMontevideo = False
 
 def validar_pais_destino(codigo_postal):
     if len(codigo_postal) == 8 and codigo_postal[0].isalpha() and codigo_postal[1:5].isnumeric() and codigo_postal[5:9].isalpha():
@@ -28,11 +25,11 @@ def validar_pais_destino(codigo_postal):
     if len(codigo_postal) == 9 and codigo_postal[0:5].isnumeric() and codigo_postal[6:9].isnumeric():
         if codigo_postal[5] == '-':
             destino = PAISES[2]
-            if codigo_postal[0] == '0' or codigo_postal[0] == '1' or codigo_postal[0] == '2' or codigo_postal[0] == '3':
+            if codigo_postal[0] in '0123':
                 region_brasil = REGIONES_BRASIL[0]
-            if codigo_postal[0] == '4' or codigo_postal[0] == '5' or codigo_postal[0] == '6' or codigo_postal[0] == '7':
+            if codigo_postal[0] in '4567':
                 region_brasil = REGIONES_BRASIL[1]
-            if codigo_postal[0] == '8' or codigo_postal[0] == '9':
+            if codigo_postal[0] in '89':
                 region_brasil = REGIONES_BRASIL[2]
 
     ## Chile
@@ -53,6 +50,8 @@ def validar_pais_destino(codigo_postal):
     if destino == '':
         destino = PAISES[6]
 
+    return destino, region_brasil, esMontevideo
+
 
 def asignar_precio_tipo(tipo):
     if tipo == 0:
@@ -69,9 +68,10 @@ def asignar_precio_tipo(tipo):
         inicial = PRECIOS[5]
     if tipo == 6:
         inicial = PRECIOS[6]
+    return inicial
 
 
-def validar_envio_internacional():
+def validar_envio_internacional(inicial, destino, region_brasil, esMontevideo):
     if (destino == PAISES[1] 
         or destino == PAISES[4] 
         or esMontevideo
@@ -97,10 +97,7 @@ inicial = int(inicial)
 final = inicial
 
 # Aplicar 10% de descuento
-if pago == 1:
-    final = inicial * 0.90
+def aplicar_descuento_efectivo(importe_inicial):
+    return importe_inicial * 0.90
 
 final = int(final)
-
-# script principal
-destino = validar_pais_destino()
