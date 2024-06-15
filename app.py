@@ -5,15 +5,19 @@ PRECIOS = (1100, 1800, 2450, 8300, 10900, 14300, 17900)
 
 # validar pais destino
 def asignar_pais_destino(codigo_postal):
+    destino = ''
+    region_brasil = ''
+    es_montevideo = False
+
     if len(codigo_postal) == 8 and codigo_postal[0].isalpha() and codigo_postal[1:5].isnumeric() and codigo_postal[5:9].isalpha():
         destino = PAISES[0]
 
     ## Bolivia
-    if len(codigo_postal) == 4 and codigo_postal[0:].isnumeric():
+    elif len(codigo_postal) == 4 and codigo_postal[0:].isnumeric():
         destino = PAISES[1]
 
     ## Brasil
-    if len(codigo_postal) == 9 and codigo_postal[0:5].isnumeric() and codigo_postal[6:9].isnumeric():
+    elif len(codigo_postal) == 9 and codigo_postal[0:5].isnumeric() and codigo_postal[6:9].isnumeric():
         if codigo_postal[5] == '-':
             destino = PAISES[2]
             if codigo_postal[0] in '0123':
@@ -24,42 +28,41 @@ def asignar_pais_destino(codigo_postal):
                 region_brasil = REGIONES_BRASIL[2]
 
     ## Chile
-    if len(codigo_postal) == 7 and codigo_postal[0:].isnumeric():
+    elif len(codigo_postal) == 7 and codigo_postal[0:].isnumeric():
         destino = PAISES[3]
 
     ## Paraguay
-    if len(codigo_postal) == 6 and codigo_postal[0:].isnumeric():
+    elif len(codigo_postal) == 6 and codigo_postal[0:].isnumeric():
         destino = PAISES[4]
 
     ## Uruguay
-    if len(codigo_postal) == 5 and codigo_postal[0:].isnumeric():
+    elif len(codigo_postal) == 5 and codigo_postal[0:].isnumeric():
         destino = PAISES[5]
         if codigo_postal[0] == '1':
             es_montevideo = True
 
     ## Otro
-    if destino == '':
+    else:
         destino = PAISES[6]
 
     return destino, region_brasil, es_montevideo
 
 # asignar precio por tipo de envio
 def asignar_precio_inicial(tipo):
-    if tipo == 0:
-        importe_envio = PRECIOS[0]
-    if tipo == 1:
-        importe_envio = PRECIOS[1]
-    if tipo == 2:
-        importe_envio = PRECIOS[2]
-    if tipo == 3:
-        importe_envio = PRECIOS[3]
-    if tipo == 4:
-        importe_envio = PRECIOS[4]
-    if tipo == 5:
-        importe_envio = PRECIOS[5]
-    if tipo == 6:
-        importe_envio = PRECIOS[6]
-    return importe_envio
+    if tipo == '0':
+        return PRECIOS[0]
+    elif tipo == '1':
+        return PRECIOS[1]
+    elif tipo == '2':
+        return PRECIOS[2]
+    elif tipo == '3':
+        return PRECIOS[3]
+    elif tipo == '4':
+        return PRECIOS[4]
+    elif tipo == '5':
+        return PRECIOS[5]
+    else:
+        return PRECIOS[6]
 
 # asignar precio por envio internacional
 def asignar_precio_internacional(importe_envio, destino, region_brasil, es_montevideo):
@@ -67,20 +70,18 @@ def asignar_precio_internacional(importe_envio, destino, region_brasil, es_monte
         or destino == PAISES[4] 
         or es_montevideo
         or region_brasil == REGIONES_BRASIL[2]):
-        importe_envio *= 1.20
+        return importe_envio * 1.20
     
     elif (destino == PAISES[3]
         or (destino == PAISES[5] and not es_montevideo)
         or region_brasil == REGIONES_BRASIL[0]):
-        importe_envio *= 1.25
+        return importe_envio * 1.25
     
     elif region_brasil == REGIONES_BRASIL[1]:
-        importe_envio *= 1.30
+        return importe_envio * 1.30
     
-    elif destino == PAISES[6]:
-        importe_envio *= 1.50
-
-    return importe_envio
+    else:
+        return importe_envio * 1.50
     
 # Aplicar 10% de descuento
 def aplicar_descuento_efectivo(importe_envio):
@@ -89,25 +90,25 @@ def aplicar_descuento_efectivo(importe_envio):
 def obtener_importe_envio(codigo_postal, tipo, forma_pago):
     destino, region_brasil, es_montevideo = asignar_pais_destino(codigo_postal)
     importe_envio = asignar_precio_inicial(tipo)
+    print(destino, importe_envio)
     if destino != 'Argentina':
         importe_envio = asignar_precio_internacional(importe_envio, destino, region_brasil, es_montevideo)
     if forma_pago == '1':
-        importe_envio = aplicar_descuento_efectivo(importe_envio)
+        importe_envio = aplicar_descuento_efectivo(int(importe_envio))
         
     return int(importe_envio)
 
 cedvalid = 0
 cedinvalid = 0
-imp_acu_total = None
+imp_acu_total = 0
 ccs = 0
 ccc = 0
 cce = 0
-mayor = None
-tipo_mayor = None
-primer_cp = None
-cant_primer_cp = None
-menimp = None
-mencp = None
+tipo_mayor = ''
+primer_cp = ''
+cant_primer_cp = 0
+menimp = 0
+mencp = ''
 porc = 0
 prom = 0
 
@@ -142,7 +143,11 @@ def obtener_tipo_control(envio):
     return control
 
 def obtener_codigo_postal(envio):
-    return envio[0:8]
+    indice_car = 0
+    for caracter in envio:
+        if caracter != ' ':
+            return envio[indice_car:9]
+        indice_car += 1
 
 def obtener_direccion(envio):
     return envio[9:29]
@@ -155,13 +160,13 @@ def obtener_forma_pago(envio):
 
 def validar_direccion(direccion):
     car_temp = None
-    nueva_palabra = None
+    indice_car = 0
     palabra_alphanum = True
     dos_mayus_seg = False
     palabra_num = True
     
     for caracter in direccion:
-        if not caracter.isalpha() and not caracter.isnumeric():
+        if caracter != ' ' and caracter != '.' and not caracter.isalpha() and not caracter.isnumeric():
             palabra_alphanum = False
         
         if car_temp == None:
@@ -170,15 +175,15 @@ def validar_direccion(direccion):
             if caracter.isupper() and car_temp.isupper():
                 dos_mayus_seg = True
         
-        if nueva_palabra and not caracter.isnumeric():
-            palabra_num = False
-            nueva_palabra = False
-        if caracter == '.' and nueva_palabra:
-            nueva_palabra = False
-        if caracter == ' ' and nueva_palabra == None:
-            nueva_palabra = True
+        if caracter == '.':
+            indice_decremento = -1
+            while direccion[indice_car + indice_decremento] != ' ':
+                if not direccion[indice_car + indice_decremento].isnumeric():
+                    palabra_num = False
+                indice_decremento -= 1
         
         car_temp = caracter
+        indice_car += 1
             
     if palabra_alphanum and not dos_mayus_seg and palabra_num:
         return True
@@ -188,11 +193,11 @@ def validar_direccion(direccion):
 def acumular_tipo_carta(tipo, ccs, ccc, cce):
     if tipo in '012':
         ccs += 1
-    if tipo in '34':
+    elif tipo in '34':
         ccc += 1
-    if tipo in '56':
+    else:
         cce += 1
-    return 
+    return ccs, ccc, cce
 
 def carta_mayor_enviada():
     if (ccs > ccc and ccs > cce) or (ccs > cce and ccs == ccc) or (ccs > ccc and ccs == cce):
@@ -202,9 +207,6 @@ def carta_mayor_enviada():
     else:
         return 'Carta Expresa'
 
-def acumular_primer_cp(cant_primer_cp):
-    cant_primer_cp += 1
-
 def es_pcia_bsas(codigo_postal):
     if codigo_postal[0] == 'B':
         return True
@@ -212,13 +214,13 @@ def es_pcia_bsas(codigo_postal):
         return False
 
 # script principal
-envios = leer_archivo()
+envios = leer_archivo('envios100HC.txt')
 control = obtener_tipo_control(envios[0])
 
 if control == 'Hard Control':
     imp_acu_pcia_bsas = 0
     for envio in envios:
-        if envio != envio[0]:
+        if envio != envios[0]:
             direccion = obtener_direccion(envio)
             direccion_valida = validar_direccion(direccion)
             if direccion_valida:
@@ -230,7 +232,15 @@ if control == 'Hard Control':
                 cedvalid += 1
 
                 imp_acu_total += importe_envio
-                acumular_tipo_carta(tipo, ccs, ccc, cce)
+
+                ccs, ccc, cce = acumular_tipo_carta(tipo, ccs, ccc, cce)
+
+                if primer_cp != None and primer_cp == codigo_postal:
+                    cant_primer_cp += 1
+                if envio == envios[1]:
+                    print('llego')
+                    primer_cp = codigo_postal
+                    cant_primer_cp += 1
 
                 destino, _, _ = asignar_pais_destino(codigo_postal)
                 if destino != 'Argentina':
@@ -255,13 +265,13 @@ else:
 
             cedvalid += 1
             imp_acu_total += importe_envio
-            acumular_tipo_carta(tipo, ccs, ccc, cce)
+            ccs, ccc, cce = acumular_tipo_carta(tipo, ccs, ccc, cce)
 
             if primer_cp != None and primer_cp == codigo_postal:
-                acumular_primer_cp(cant_primer_cp)
-            if envio == envio[1]:
+                cant_primer_cp += 1
+            if envio == envios[1]:
                 primer_cp = codigo_postal
-                acumular_primer_cp(cant_primer_cp)
+                cant_primer_cp += 1
 
             if (menimp != None and mencp != None) and destino == 'Brasil':
                 if importe_envio < menimp:
