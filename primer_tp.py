@@ -4,6 +4,17 @@ REGIONES_BRASIL = ('0-1-2-3', '4-5-6-7', '8-9')
 IDENITFICADOR_PROVINCIA_ARG = ('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 
                                 'J', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 
                                 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z')
+PROVINCIAS_ARG = ('Salta',
+                   'Provincia de Buenos Aires',
+                   'Ciudad Autónoma de Buenos Aires',
+                   'San Luis', 'Entre Ríos', 'La Rioja',
+                   'Santiago del Estero',
+                   'Chaco', 'San Juan',
+                   'Catamarca', 'La Pampa',
+                   'Mendoza', 'Misiones', 'Formosa', 'Neuquén',
+                   'Río Negro','Santa Fe', 'Tucumán', 'Chubut',
+                   'Tierra del Fuego', 'Corrientes', 'Córdoba',
+                   'Jujuy', 'Santa Cruz')
 
 PRECIOS = (1100, 1800, 2450, 8300, 10900, 14300, 17900)
 
@@ -12,6 +23,57 @@ inicial = 0
 final = 0
 
 # Variables temporales
+if len(cp) == 8 and cp[0].isalpha() and cp[1:5].isnumeric() and cp[5:9].isalpha():
+    destino = PAISES[0]
+    if cp[0] == IDENITFICADOR_PROVINCIA_ARG[0]:
+        provincia = PROVINCIAS_ARG[0]
+    if cp[0] == IDENITFICADOR_PROVINCIA_ARG[1]:
+        provincia = PROVINCIAS_ARG[1]
+    if cp[0] == IDENITFICADOR_PROVINCIA_ARG[2]:
+        provincia = PROVINCIAS_ARG[2]
+    if cp[0] == IDENITFICADOR_PROVINCIA_ARG[3]:
+        provincia = PROVINCIAS_ARG[3]
+    if cp[0] == IDENITFICADOR_PROVINCIA_ARG[4]:
+        provincia = PROVINCIAS_ARG[4]
+    if cp[0] == IDENITFICADOR_PROVINCIA_ARG[5]:
+        provincia = PROVINCIAS_ARG[5]
+    if cp[0] == IDENITFICADOR_PROVINCIA_ARG[6]:
+        provincia = PROVINCIAS_ARG[6]
+    if cp[0] == IDENITFICADOR_PROVINCIA_ARG[7]:
+        provincia = PROVINCIAS_ARG[7]
+    if cp[0] == IDENITFICADOR_PROVINCIA_ARG[8]:
+        provincia = PROVINCIAS_ARG[8]
+    if cp[0] == IDENITFICADOR_PROVINCIA_ARG[9]:
+        provincia = PROVINCIAS_ARG[9]
+    if cp[0] == IDENITFICADOR_PROVINCIA_ARG[10]:
+        provincia = PROVINCIAS_ARG[10]
+    if cp[0] == IDENITFICADOR_PROVINCIA_ARG[11]:
+        provincia = PROVINCIAS_ARG[11]
+    if cp[0] == IDENITFICADOR_PROVINCIA_ARG[12]:
+        provincia = PROVINCIAS_ARG[12]
+    if cp[0] == IDENITFICADOR_PROVINCIA_ARG[13]:
+        provincia = PROVINCIAS_ARG[13]
+    if cp[0] == IDENITFICADOR_PROVINCIA_ARG[14]:
+        provincia = PROVINCIAS_ARG[14]
+    if cp[0] == IDENITFICADOR_PROVINCIA_ARG[15]:
+        provincia = PROVINCIAS_ARG[15]
+    if cp[0] == IDENITFICADOR_PROVINCIA_ARG[16]:
+        provincia = PROVINCIAS_ARG[16]
+    if cp[0] == IDENITFICADOR_PROVINCIA_ARG[17]:
+        provincia = PROVINCIAS_ARG[17]
+    if cp[0] == IDENITFICADOR_PROVINCIA_ARG[18]:
+        provincia = PROVINCIAS_ARG[18]
+    if cp[0] == IDENITFICADOR_PROVINCIA_ARG[19]:
+        provincia = PROVINCIAS_ARG[19]
+    if cp[0] == IDENITFICADOR_PROVINCIA_ARG[20]:
+        provincia = PROVINCIAS_ARG[20]
+    if cp[0] == IDENITFICADOR_PROVINCIA_ARG[21]:
+        provincia = PROVINCIAS_ARG[21]
+    if cp[0] == IDENITFICADOR_PROVINCIA_ARG[22]:
+        provincia = PROVINCIAS_ARG[22]
+    if cp[0] == IDENITFICADOR_PROVINCIA_ARG[23]:
+        provincia = PROVINCIAS_ARG[23]
+
 
 def validar_pais_destino(codigo_postal):
     if len(codigo_postal) == 8 and codigo_postal[0].isalpha() and codigo_postal[1:5].isnumeric() and codigo_postal[5:9].isalpha():

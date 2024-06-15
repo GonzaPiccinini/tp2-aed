@@ -1,10 +1,6 @@
 # Constantes
 PAISES = ('Argentina', 'Bolivia', 'Brasil', 'Chile', 'Paraguay', 'Uruguay', 'Otro')
 REGIONES_BRASIL = ('0-1-2-3', '4-5-6-7', '8-9')
-IDENITFICADOR_PROVINCIA_ARG = ('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 
-                                'J', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 
-                                'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z')
-
 PRECIOS = (1100, 1800, 2450, 8300, 10900, 14300, 17900)
 
 # validar pais destino
@@ -100,20 +96,20 @@ def obtener_importe_envio(codigo_postal, tipo, forma_pago):
         
     return int(importe_envio)
 
-cedvalid = None
-cedinvalid = None
+cedvalid = 0
+cedinvalid = 0
 imp_acu_total = None
-ccs = None
-ccc = None
-cce = None
+ccs = 0
+ccc = 0
+cce = 0
 mayor = None
 tipo_mayor = None
 primer_cp = None
 cant_primer_cp = None
 menimp = None
 mencp = None
-porc = None
-prom = None
+porc = 0
+prom = 0
 
 def leer_archivo(nombre_archivo = 'envios25.txt'):
     """Procesa un archivo y devuelve una sucesion de cadena de caracteres correspondientes a cada linea del archivo.
@@ -176,7 +172,8 @@ def validar_direccion(direccion):
         
         if nueva_palabra and not caracter.isnumeric():
             palabra_num = False
-        if caracter == ' ' and nueva_palabra:
+            nueva_palabra = False
+        if caracter == '.' and nueva_palabra:
             nueva_palabra = False
         if caracter == ' ' and nueva_palabra == None:
             nueva_palabra = True
@@ -208,13 +205,18 @@ def carta_mayor_enviada():
 def acumular_primer_cp(cant_primer_cp):
     cant_primer_cp += 1
 
-def validar_menor_importe(importe_envio):
+def es_pcia_bsas(codigo_postal):
+    if codigo_postal[0] == 'B':
+        return True
+    else:
+        return False
 
 # script principal
 envios = leer_archivo()
 control = obtener_tipo_control(envios[0])
 
 if control == 'Hard Control':
+    imp_acu_pcia_bsas = 0
     for envio in envios:
         if envio != envio[0]:
             direccion = obtener_direccion(envio)
@@ -226,23 +228,32 @@ if control == 'Hard Control':
                 importe_envio = obtener_importe_envio(codigo_postal, tipo, forma_pago)
 
                 cedvalid += 1
+
                 imp_acu_total += importe_envio
                 acumular_tipo_carta(tipo, ccs, ccc, cce)
+
+                destino, _, _ = asignar_pais_destino(codigo_postal)
+                if destino != 'Argentina':
+                    porc += 1
+
+                if es_pcia_bsas(codigo_postal):
+                    prom += 1
+                    imp_acu_pcia_bsas += importe_envio
             else:
-                cedinvalid += 1
+                    cedinvalid += 1
         
 else:
     cedinvalid = 0
-    importe_temp = None
+    imp_acu_pcia_bsas = 0
     for envio in envios:
         if envio != envios[0]:
             codigo_postal = obtener_codigo_postal(envio)
             tipo = obtener_tipo_envio(envio)
             forma_pago = obtener_forma_pago(envio)
-            destino, _ ,_ = asignar_pais_destino(codigo_postal)
+            destino, _, _ = asignar_pais_destino(codigo_postal)
             importe_envio = obtener_importe_envio(codigo_postal, tipo, forma_pago)
 
-            cedvalid =+ 1
+            cedvalid += 1
             imp_acu_total += importe_envio
             acumular_tipo_carta(tipo, ccs, ccc, cce)
 
@@ -252,15 +263,26 @@ else:
                 primer_cp = codigo_postal
                 acumular_primer_cp(cant_primer_cp)
 
-            if importe_temp != None and destino == 'Brasil':
-                if validar_menor_importe(importe_envio, importe_temp):
+            if (menimp != None and mencp != None) and destino == 'Brasil':
+                if importe_envio < menimp:
                     menimp = importe_envio
-            if importe_temp == None:
-                importe_temp = importe_envio
+                    mencp = codigo_postal
+            if (menimp == None and mencp == None) and destino == 'Brasil':
+                menimp = importe_envio
+                mencp = codigo_postal
 
-            importe_temp = importe_envio
+            if destino != 'Argentina':
+                porc += 1
 
-tipo_mayor = carta_mayor_enviada(ccs, ccc, cce)
+            if es_pcia_bsas(codigo_postal):
+                prom += 1
+                imp_acu_pcia_bsas += importe_envio
+
+tipo_mayor = carta_mayor_enviada()
+if cedvalid != 0:
+    porc = int(porc * 100 / cedvalid)
+if prom != 0:
+    prom = int(imp_acu_pcia_bsas / prom)
 
 print(' (r1) - Tipo de control de direcciones:', control)
 print(' (r2) - Cantidad de envios con direccion valida:', cedvalid)
@@ -272,7 +294,7 @@ print(' (r7) - Cantidad de cartas expresas:', cce)
 print(' (r8) - Tipo de carta con mayor cantidad de envios:', tipo_mayor)
 print(' (r9) - Codigo postal del primer envio del archivo:', primer_cp)
 print('(r10) - Cantidad de veces que entro ese primero:', cant_primer_cp)
-# print('(r11) - Importe menor pagado por envios a Brasil:', menimp)
-# print('(r12) - Codigo postal del envio a Brasil con importe menor:', mencp)
-# print('(r13) - Porcentaje de envios al exterior sobre el total:', porc)
-# print('(r14) - Importe final promedio de los envios a Buenos Aires:', prom)
+print('(r11) - Importe menor pagado por envios a Brasil:', menimp)
+print('(r12) - Codigo postal del envio a Brasil con importe menor:', mencp)
+print('(r13) - Porcentaje de envios al exterior sobre el total:', porc)
+print('(r14) - Importe final promedio de los envios a Buenos Aires:', prom)
