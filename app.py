@@ -107,7 +107,7 @@ cce = 0
 tipo_mayor = ''
 primer_cp = ''
 cant_primer_cp = 0
-menimp = 0
+menimp = None
 mencp = ''
 porc = 0
 prom = 0
@@ -216,7 +216,6 @@ def es_pcia_bsas(codigo_postal):
 # script principal
 envios = leer_archivo()
 control = obtener_tipo_control(envios[0])
-primer_cp = envios[1]
 
 if control == 'Hard Control':
     imp_acu_pcia_bsas = 0
