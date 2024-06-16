@@ -214,8 +214,9 @@ def es_pcia_bsas(codigo_postal):
         return False
 
 # script principal
-envios = leer_archivo('envios100HC.txt')
+envios = leer_archivo()
 control = obtener_tipo_control(envios[0])
+primer_cp = envios[1]
 
 if control == 'Hard Control':
     imp_acu_pcia_bsas = 0
@@ -225,6 +226,7 @@ if control == 'Hard Control':
             direccion_valida = validar_direccion(direccion)
             if direccion_valida:
                 codigo_postal = obtener_codigo_postal(envio)
+                print('codigo')
                 tipo = obtener_tipo_envio(envio)
                 forma_pago = obtener_forma_pago(envio)
                 importe_envio = obtener_importe_envio(codigo_postal, tipo, forma_pago)
@@ -234,13 +236,6 @@ if control == 'Hard Control':
                 imp_acu_total += importe_envio
 
                 ccs, ccc, cce = acumular_tipo_carta(tipo, ccs, ccc, cce)
-
-                if primer_cp != None and primer_cp == codigo_postal:
-                    cant_primer_cp += 1
-                if envio == envios[1]:
-                    print('llego')
-                    primer_cp = codigo_postal
-                    cant_primer_cp += 1
 
                 destino, _, _ = asignar_pais_destino(codigo_postal)
                 if destino != 'Argentina':
