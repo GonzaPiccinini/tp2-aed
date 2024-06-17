@@ -129,14 +129,60 @@ def obtener_importe_envio(codigo_postal, tipo, forma_pago):
 
 # Lee una archivo y retorna sus líneas como una lista de cadenas.
 def leer_archivo(archivo):
+    # ... inicializar variables ...
+    lineas = ()
+
+    # ... inicializar variables auxiliares ...
+    indice_car = 0
+    saltos_linea = 0
+    saltos_indice = ()
+
     # ... abrir archivo ...
     archivo_abierto = open(archivo, 'rt')
 
-    # ... leer y obtener lineas del archivo ...
-    lineas = archivo_abierto.readlines() 
+    # ... leer archvo ...
+    archivo_leido = archivo_abierto.read()
+    
+    # ... iterar caracteres del archivo leído ...
+    for caracter in archivo_leido:
+        # ... validar si el caracter es un salto de línea ...
+        if caracter == '\n':
+            # ... acumular cantidad de veces que se repite el salto de línea y agregar el índice del mismo a una tupla ...
+            saltos_linea += 1
+            saltos_indice += indice_car,
+        
+        # ... acumular índice del caracter ...
+        indice_car += 1
 
-    # ... cerrar archivo ...      
-    archivo_abierto.close()
+    # ... iterar índices de todos los saltos de línea ...
+    for i in range(saltos_linea):
+        # ... validar si es la primer iteración ...
+        if i == 0:
+            # ... inicializar variable que contendrá el índice del caracter inicial de cada línea nueva ...
+            inicio_linea = 0
+
+            # ... agregar línea nueva a la tupla que contendrá todas las líneas del archivo mediante un slice
+            # que toma como índice inicial al índice del caracter inicial de cada línea nueva, y toma como índice final
+            # al índice del salto de línea final de cada línea ...
+            lineas += archivo_leido[inicio_linea:saltos_indice[i]],
+        
+        else:
+            # ... inicializar variable que contendrá el índice del caracter inicial de cada línea nueva ...
+            inicio_linea = saltos_indice[i-1] 
+
+            # ... validar si existe algún caracter en la nueva línea ...
+            if archivo_leido[inicio_linea + 1:saltos_indice[i]] != '':
+                # ... agregar línea nueva a la tupla que contendrá todas las líneas del archivo mediante un slice
+                # que toma como índice inicial al índice del caracter inicial de cada línea nueva, y toma como índice final
+                # al índice del salto de línea final de cada línea ...
+                lineas += archivo_leido[inicio_linea + 1:saltos_indice[i]],
+    
+    # ... validar si existe algún caracter en la última línea ...
+    if archivo_leido[saltos_indice[-1] + 1:len(archivo_leido)] != '':
+        # ... agregar la última línea a la tupla que contendrá todas las líneas del archivo mediante un slice
+        # que toma como índice inicial al índice del salto de línea final, y toma como índice final
+        # al índice del último elemento de la última línea ...
+        lineas += archivo_leido[saltos_indice[-1] + 1:len(archivo_leido)],
 
     # ... retornar líneas del archivo ...
     return lineas
@@ -166,7 +212,7 @@ def obtener_codigo_postal(envio):
         # ... sumar 1 al índice del caracter ...
         indice_car += 1
 
-# Retorna la direccion de un envío.
+# Retorna la dirección de un envío.
 def obtener_direccion(envio):
     # ... retornar dirección ...
     return envio[9:29]
@@ -258,7 +304,7 @@ def acumular_tipo_carta(tipo, ccs, ccc, cce):
     return ccs, ccc, cce
 
 # Compara y obtiene el tipo de carta con mayor cantidad de envios.
-def carta_mayor_enviada():
+def carta_mayor_enviada(ccs, ccc, cce):
     # ... validar tipo de carta con mayor cantidad de envíos ...
     if (ccs > ccc and ccs > cce) or (ccs > cce and ccs == ccc) or (ccs > ccc and ccs == cce):
         # ... retornar tipo de carta simple ...
@@ -291,7 +337,7 @@ def es_men_imp(codigo_postal, destino, importe_envio, menimp, mencp):
     # ... validar si ya existe menor importe y código postal del envío con menor importe y si el país destino es Brasil ...
     if (menimp != None and mencp != None) and destino == PAISES[2]:
         # ... validar si el código postal del envío con menor importe es igual al código postal y si el importe
-        # ... del envío es menor al menor importe guardado ...
+        # del envío es menor al menor importe guardado ...
         if (mencp != codigo_postal) and importe_envio < menimp:
             # ... retornar True en caso de cumplimiento ...
             return True
@@ -472,46 +518,49 @@ def aplicar_soft_control(envios):
             ccs, ccc, cce, primer_cp, cant_primer_cp, 
             menimp, mencp, porc, prom, imp_acu_pcia_bsas) 
 
+def principal():
+    # ... leer y obtener envíos del archivo que los contiene ...
+    envios = leer_archivo('envios.txt')
+    # ... obtener el tipo de control de los envíos ...
+    control = obtener_tipo_control(envios[0])
+
+    # ... validar el tipo de control ...
+    if control == 'Hard Control':
+        # ... aplicar tipo de control y obtener variables procesadas ...
+        (cedvalid, cedinvalid, imp_acu_total,
+         ccs, ccc, cce, primer_cp, cant_primer_cp,
+         menimp, mencp, porc, prom, imp_acu_pcia_bsas) = aplicar_hard_control(envios)
+    else:
+        (cedvalid, cedinvalid, imp_acu_total,
+         ccs, ccc, cce, primer_cp, cant_primer_cp,
+         menimp, mencp, porc, prom, imp_acu_pcia_bsas) = aplicar_soft_control(envios)
+
+    # ... obtener tipo de carta con mayor cantidad de envíos ...
+    tipo_mayor = carta_mayor_enviada(ccs, ccc, cce)
+
+    # ... calcular el porcentaje que representa la cantidad total de envíos al exterior sobre la cantidad total de envíos ...
+    porc = int(porc * 100 / (len(envios) - 1))
+
+    # ... validar si existe algún envío a la Pcia. de BsAs.
+    if prom != 0:
+        # ... calcular el importe final promedio de los envíos a la Pcia. de BsAs.
+        prom = int(imp_acu_pcia_bsas / prom)
+
+    # Salidas
+    print(' (r1) - Tipo de control de direcciones:', control)
+    print(' (r2) - Cantidad de envios con direccion valida:', cedvalid)
+    print(' (r3) - Cantidad de envios con direccion no valida:', cedinvalid)
+    print(' (r4) - Total acumulado de importes finales:', imp_acu_total)
+    print(' (r5) - Cantidad de cartas simples:', ccs)
+    print(' (r6) - Cantidad de cartas certificadas:', ccc)
+    print(' (r7) - Cantidad de cartas expresas:', cce)
+    print(' (r8) - Tipo de carta con mayor cantidad de envios:', tipo_mayor)
+    print(' (r9) - Codigo postal del primer envio del archivo:', primer_cp)
+    print('(r10) - Cantidad de veces que entro ese primero:', cant_primer_cp)
+    print('(r11) - Importe menor pagado por envios a Brasil:', menimp)
+    print('(r12) - Codigo postal del envio a Brasil con importe menor:', mencp)
+    print('(r13) - Porcentaje de envios al exterior sobre el total:', porc)
+    print('(r14) - Importe final promedio de los envios a Buenos Aires:', prom)
+
 # Script principal
-# ... leer y obtener envíos del archivo que los contiene ...
-envios = leer_archivo('envios.txt')
-# ... obtener el tipo de control de los envíos ...
-control = obtener_tipo_control(envios[0])
-
-# ... validar el tipo de control ...
-if control == 'Hard Control':
-    # ... aplicar tipo de control y obtener variables procesadas ...
-    (cedvalid, cedinvalid, imp_acu_total,
-     ccs, ccc, cce, primer_cp, cant_primer_cp,
-     menimp, mencp, porc, prom, imp_acu_pcia_bsas) = aplicar_hard_control(envios)
-else:
-    (cedvalid, cedinvalid, imp_acu_total,
-     ccs, ccc, cce, primer_cp, cant_primer_cp,
-     menimp, mencp, porc, prom, imp_acu_pcia_bsas) = aplicar_soft_control(envios)
-
-# ... obtener tipo de carta con mayor cantidad de envíos ...
-tipo_mayor = carta_mayor_enviada()
-
-# ... calcular el porcentaje que representa la cantidad total de envíos al exterior sobre la cantidad total de envíos ...
-porc = int(porc * 100 / (len(envios) - 1))
-
-# ... validar si existe algún envío a la Pcia. de BsAs.
-if prom != 0:
-    # ... calcular el importe final promedio de los envíos a la Pcia. de BsAs.
-    prom = int(imp_acu_pcia_bsas / prom)
-
-# Salidas
-print(' (r1) - Tipo de control de direcciones:', control)
-print(' (r2) - Cantidad de envios con direccion valida:', cedvalid)
-print(' (r3) - Cantidad de envios con direccion no valida:', cedinvalid)
-print(' (r4) - Total acumulado de importes finales:', imp_acu_total)
-print(' (r5) - Cantidad de cartas simples:', ccs)
-print(' (r6) - Cantidad de cartas certificadas:', ccc)
-print(' (r7) - Cantidad de cartas expresas:', cce)
-print(' (r8) - Tipo de carta con mayor cantidad de envios:', tipo_mayor)
-print(' (r9) - Codigo postal del primer envio del archivo:', primer_cp)
-print('(r10) - Cantidad de veces que entro ese primero:', cant_primer_cp)
-print('(r11) - Importe menor pagado por envios a Brasil:', menimp)
-print('(r12) - Codigo postal del envio a Brasil con importe menor:', mencp)
-print('(r13) - Porcentaje de envios al exterior sobre el total:', porc)
-print('(r14) - Importe final promedio de los envios a Buenos Aires:', prom)
+principal()
